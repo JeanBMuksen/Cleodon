@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TESEU</title>
+
+    <!-- using online links -->
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+        integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
+        integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+    <link rel="stylesheet" href="//malihu.github.io/custom-scrollbar/jquery.mCustomScrollbar.min.css">
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static '/css/main.css' %}"> 
+
+    <link rel="stylesheet" href="{% static '/css/sidebar-themes.css' %}">
+    
+    <link rel="ico" href="{% static '/img/favicon.ico' %}" />
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static '/css/modal-escolha-pub.css' %}">
+    {% block extra %}
+
+    <style>
+        .container {
+            text-align: right;
+        }
+
+        #iframe{
+            height: 1000px;
+            width: 800px;
+        }
+
+        #modal-apresentacao{
+
+            text-align: center;
+        }
+
+        #label_edit{
+
+            position: absolute;
+            top: 0;
+            margin-left: 90%;
+            height: 5%;
+            margin-top: 2px;
+            
+        }
+
+        #FormEditLabel{
+            margin-left: 290px;
+            margin-top: -30px;
+            margin-right: 20px;
+        }
+        #chk_remove_mark{
+            margin-top: 6px;
+            vertical-align: text-top;
+        }
+        #chk_marked_pages{
+            margin-top: 6px;
+            vertical-align: text-top;
+        }
+
+        .publications{
+            text-align: center;
+            margin-left: 330px;
+            width: 70%;
+        }
+
+        .cabecalho{
+            text-align: center;
+            margin-left: 280px;
+        }
+
+        /*go top btn*/
+        #btnGoTop {
+        display: none; /* Hidden by default */
+        position: fixed; /* Fixed/sticky position */
+        bottom: 5px; /* Place the button at the bottom of the page */
+        right: 5px; /* Place the button 30px from the right */
+        z-index: 9999; /* Make sure it does not overlap */
+        border: none; /* Remove borders */
+        outline: none; /* Remove outline */
+        background-color: grey; /* Set a background color */
+        color: white; /* Text color */
+        cursor: pointer; /* Add a mouse pointer on hover */
+        padding: 5px; /* Some padding */
+        border-radius: 5px; /* Rounded corners */
+        font-size: 11px; /* Increase font size */
+        }
+
+        #btnGoTop:hover {
+        background-color: #555; /* Add a dark-grey background on hover */
+        }
+
+    </style>
+    {% endblock %}
+</head>
+<body>
+    <button onclick="GoTop()" id="btnGoTop" title="Vá para o início">^^</button>
+    {% block content %}
+        <div class="page-wrapper default-theme sidebar-bg bg1 toggled">
+            <div>
+                <span class="d-block p-2 bg-dark text-white" style="position: center; margin-right: 0px;">
+                    <a id="toggle-sidebar" class="btn-secondary fas fa-bars" style="margin-top: 15px; position: center;" ></a>
+                    
+                    {% if file_name != None and file_name != '' %}
+                    
+                        <div id="FormEditLabel" class="form-inline">
+                            <div class="form-group" style="width: 100%;">
+                                <div class="row"  style="width: 100%;">
+                                    <div class="col-md-5 ">
+                                        <input type="text" class="form-control" id="exportar_pag" placeholder="Ex: 1,2,3-5,9-34,235-240,255,345" style="width: 100%; height: 30px; margin-top: 0px;;"  onkeypress="return enterExport(event);">
+                                        <div id="remove_mark" style="text-align: left;">
+                                            <input type="checkbox" id="chk_remove_mark" name="chk_remove_mark" style="float: left;">
+                                            <label id="lbl_remove_mark" for="chk_remove_mark"  style="float: left; margin-left: 3px;">Retirar marcação ao exportar</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 ">
+                                        <button id="btnExportar" class="btn btn-primary mb-2" style="height: 30px; padding-top: 0px;"  onclick="exportarPDF()">Exportar</button>
+                                    </div>
+                                    <div class="col-md-4 " style="text-align: right;">
+                                        <input type="number" min="0" class="form-control" id="editarLabel" placeholder="N°" style="width: 75px; height: 30px; margin-top: 0px;" onkeypress="return enterDoccano(event);">
+                                    </div>
+                                    <div class="col-md-1 ">
+                                        <button id="btnEditarDoccano" class="btn btn-primary mb-2" style="height: 30px; padding-top: 0px;" onclick="redirectDoccano();">Editar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    {% endif %}
+                    
+                    <input id="hdnPub_id" type="hidden" value="{{pub_id}}">
+                    <input id="hdnFileName" type="hidden" value="{{file_name}}">
+                    {% if exported_file_error != None and exported_file_error != '' %}
+                        <input id="hdn_exported_file_error" type="hidden" value="{{exported_file_error}}">
+                    {% endif %}    
+                    {% if exported_file_path != None and exported_file_path != '' %}
+                        <input id="hdn_exported_file_path" type="hidden" value="{{exported_file_path}}">
+                    {% endif %}
+                    
+                    {% if user_id != None and user_id != '' %}
+                        <input id="hdnUser_id" type="hidden" value="{{user_id}}">
+                    {% endif %}
+            
+                </span>
+            </div>
+            
+            <!--INSERIR AQUI O CONTEUDO DA PAGINA-->
+            
+            <div class="container">
+                <div class="form-group" style="width: 100%;">
+                    <div class="row" style="margin-top: 5px;">
+                        <!-- ALERT PAGES -->
+
+                        <div class="col-md-12">
+                            <div class="alert alert-warning fade show" role="alert" id="verifica-alert" style="display:none;max-width:800px; text-align: left;float:right;">
+                                
+                                <div class="row" style="width: 100%;">
+                                    <div class="col-md-12">
+                                        <!-- <strong>Atenção! </strong>  -->
+                                        <span id="alertText"></span> &nbsp;
+                                        <button style="float:right;" id="closeAlert" type="button" class="close" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- ALERT PAGES - END -->
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 ">
+
+                            {% if exported_file_path != None and exported_file_path != '' %}
+                                {% static exported_file_path as url %}
+                                <iframe src="{{url}}" id="iframe"></iframe>
+                            {% endif %}
+
+                            {% if file_name != None and file_name != '' %}
+                                <div id="marked_pages_filter">
+                                    {% if file_path_filtered != "" %}
+                                        <input type="checkbox" id="chk_marked_pages" name="chk_marked_pages">
+                                        <label id="lbl_marked_pages" for="chk_marked_pages">Apenas páginas marcadas</label>
+                                    {% else %}
+                                        <span>* Este diário não contém páginas marcadas.</span>
+                                    {% endif %}
+                                </div>    
+
+                                {% static file_name as url %}
+                                <iframe src="{{url}}" id="iframe"></iframe>
+                            {% endif %}
+
+                            {% if publication_list != None and state == 0 %}
+                                <div class="cabecalho">
+                                    <h1>Lista de Publicações</h1>
+                                </div>
+                                </br>
+                                <div class="table-responsive-xl publications">
+                                    <table class="table">
+                                        <thead class="thead-dark">
+                                        <tr>
+                                            <th scope="col">Jornal</th>
+                                            <th scope="col">Marcado</th>
+                                            <th scope="col">Data da Publicação</th>
+                                            <th scope="col">Visualizar</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <form action="../LoadPdfAnnotation/" method="POST"></form>
+                                            {% for pub in publication_list %}
+                                                {% if pub.publication_id == 0 %}
+                                                    <tr>
+                                                        <td>Nenhum registro encontrado.</td>
+                                                    </tr>
+                                                {% else %}
+                                                    <tr>
+                                                        <td>{{pub.publication_text}}</td>
+                                                        <td>{{pub.publication_marcada}}</td>
+                                                        <td>{{pub.publication_date}}</td>
+                                                        <td>
+                                                            <form method="POST" action="../LoadPdfAnnotation/?id={{pub.publication_id}}">
+                                                                {% csrf_token %}
+                                                                <input id="data1" type="hidden" name="data1" value="{{pub.publication_name}}" />
+                                                                <input id="data2" type="hidden" name="data2" value="{{pub.publication_id}}" />
+                                                                <input id="hdn_pdf_has_annotation" type="text" name="hdn_pdf_has_annotation" value="{{pub.publication_pdf_has_annotation}}" style="display: none;"/>
+                                                                <button type="submit" class="btn btn-dark">Visualizar</button>
+                                                            </form>
+                                                            </td>
+                                                        </td>
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </form>
+                                        </tbody>
+                                
+                                    </table>
+                                </div>  
+                            {% endif %}
+
+                            {% if publication_list != None and state == 1 %}
+                            <div class="cabecalho">
+                                <h1>Lista de Publicações</h1>
+                            </div>
+                            </br>
+                            <div class="table-responsive-xl publications">
+                                <table class="table">
+                                    <thead class="thead-dark">
+                                    <tr>
+                                        <th scope="col">Jornal</th>
+                                        <th scope="col">Data da Publicação</th>
+                                        <th scope="col">Baixar</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <form action="../LoadPdfAnnotation/" method="POST"></form>
+                                        {% for pub in publication_list %}
+                                            {% if pub.publication_id == 0 %}
+                                                <tr>
+                                                    <td>Nenhum registro encontrado.</td>
+                                                </tr>
+                                            {% else %}
+                                                <tr>
+                                                    <td>{{pub.publication_text}}</td>
+                                                    <td>{{pub.publication_date}}</td>
+                                                    <td>
+                                                        <form method="POST" action="../downloadPDF/?id={{pub.publication_id}}">
+                                                            {% csrf_token %}
+                                                            <input id="data1" type="hidden" name="data1" value="{{pub.publication_name}}" />
+                                                            <input id="data2" type="hidden" name="data2" value="{{pub.publication_id}}" />
+                                                            <button type="submit" class="btn btn-dark fas fa-download"> Download</button>
+                                                        </form>
+                                                        </td>
+                                                    </td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </form>
+                                    </tbody>
+                            
+                                </table>
+                            </div>  
+                        {% endif %}
+                        </div> 
+                    </div>
+                </div>
+            </div>  
+
+            <div id="content-list-page"></div>
+
+
+
+            <!--FIM DO CONTEUDO DA PAGINA-->
+
+            <nav id="sidebar" class="sidebar-wrapper">
+                <div class="sidebar-content">
+                    
+                    <!-- sidebar-brand  -->
+                    <div class="sidebar-item sidebar-brand">
+                        <a></a>
+                        <a href="/" style="text-align: center;">Teseu</a>
+                        <a></a>
+                        <a id="toggle-sidebar-2" class="fas fa-times" style="align-content: left;">
+                        </a>
+                    </div>
+                    
+                    <!-- sidebar-header  -->
+                    <div class="sidebar-item sidebar-header d-flex flex-nowrap">
+                        <div class="user-pic">
+                            {% load static %}
+                            <img class="img-responsive img-rounded" src="{% static 'img/user.jpg' %}" alt="User picture">
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">{{user.first_name}} <strong>{{user.last_name}}</strong>
+                            </span>
+                            <span class="user-role">{{perfil_name}}</span>
+                            <span class="user-status">
+                                <i class="fa fa-circle"></i>
+                                <span>Online</span>
+                            </span>
+                        </div>
+                    </div>
+                    <!-- sidebar-search  -->
+                    <!-- <div class="sidebar-item sidebar-search">
+                        <div>
+                            <div class="input-group">
+                                <input type="text" class="form-control search-menu" placeholder="Search...">
+                                <div class="input-group-append">
+                                    <span class="input-group-text">
+                                    <i class="fa fa-search" aria-hidden="true"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                    <!-- sidebar-menu  -->
+                    <div class=" sidebar-item sidebar-menu">
+                        <ul>
+                            <li class="header-menu">
+                                <span>Ferramentas</span>
+                            </li>
+                            <li>
+                                <a>
+                                    <i class="fa fa-envelope"></i>
+                                    <button type="button" id="load-list-page">Publicações</button>
+                                </a>
+                                <a>
+                                    <i class="fa fa-globe"></i>
+                                    <span class="menu-text" id="load-list-page-download">Baixar diários</span>
+                                </a>
+                            </li>
+                            <!-- <li class="sidebar-dropdown">
+                                <a>
+                                    <i class="fa fa-tachometer-alt"></i>
+                                    <span class="menu-text">Painel de Controle</span>
+                                    <span class="badge badge-pill badge-success">Novo</span>
+                                </a>
+                                <div class="sidebar-submenu">
+                                    <ul>
+                                        <li>
+                                            <a href="#">Acesso ao banco de dados</a>
+                                        </li>
+                                        <li>
+                                            <a><button type="button" id="load-list-page">Acesso as publicações</button></a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Permissões de acesso</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Fazer solicitações</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li> -->
+                            <!-- <li class="sidebar-dropdown">
+                                <a>
+                                    <i class="fa fa-chart-line"></i>
+                                    <span class="menu-text">Importação</span>
+                                </a>
+                                <div class="sidebar-submenu">
+                                    <ul>
+                                        <li>
+                                            <a href="#">Importar PDF</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="sidebar-dropdown">
+                                <a>
+                                    <i class="fa fa-globe"></i>
+                                    <span class="menu-text">Estatísticas do sistema</span>
+                                </a>
+                                <div class="sidebar-submenu">
+                                    <ul>
+                                        <li>
+                                            <a href="#">Gráficos</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li> -->
+                        </ul>
+                    </div>
+                    <!-- sidebar-menu  -->
+                </div>
+
+                <!-- sidebar-footer  -->
+                <div class="sidebar-footer">
+                    <div class="dropdown">
+<!-- 
+                        <a data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-bell"></i>
+                            <span class="badge badge-pill badge-warning notification">{{contador.count}}</span>
+                        </a>
+                        <div class="dropdown-menu notifications" aria-labelledby="dropdownMenuMessage">
+                            <div class="notifications-header">
+                                <i class="fa fa-bell"></i>
+                                Notificações
+                            </div>
+                            <div class="dropdown-divider"></div>
+                                {% if contador.count > 1 and contador.count <= 3 %}
+                                    <a class="dropdown-item" data-toggle="modal" data-target="#modal-apresenta-pub">
+                                        <div class="notification-content">
+                                            <div class="icon">
+                                                <i class="fas fa-check text-success border border-success"></i>
+                                            </div>
+                                            <div class="content">
+                                                <div class="notification-detail">Existe uma nova versão publicada </br> 
+                                                    do Diario Oficial da União.
+                                                </div>
+                                                <div class="notification-time">
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                {% else %}
+                                    <a class="dropdown-item" data-toggle="modal" data-target="#modal-apresenta-pub">
+                                        <div class="notification-content">
+                                            <div class="icon">
+                                                <i class="fas fa-check text-success border border-success"></i>
+                                            </div>
+                                            <div class="content">
+                                                <div class="notification-detail">Existe uma versão extra </br> 
+                                                    do Diario Oficial da União.
+                                                </div>
+                                                <div class="notification-time">
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                {% endif %}
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-center" href="#">Ver todas as notificações</a>
+                        </div>
+                    </div>
+                    
+                    <div class="dropdown">
+                        <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-cog"></i>
+                            <span class="badge-sonar"></span>
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuMessage">
+                            <a class="dropdown-item" href="#">Meu Perfil</a>
+                            <a class="dropdown-item" href="#">Ajuda</a>
+                            <a class="dropdown-item" href="#">Configurações</a>
+                        </div>
+                    </div> -->
+                
+                    <div style="margin-left:10px;">
+                        <a value="logout" type="submit" href="/logout/">
+                            <i class="fa fa-power-off" style="margin-left: 240px;"></i>
+                        </a>
+                    </div>
+<!--
+                    <div class="pinned-footer">
+                        <a href="#">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </a>
+                    </div> -->
+                </div>
+            </nav>
+        </div>
+
+
+        <!-- using online scripts -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://code.jquery.com/jquery-migrate-1.4.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+            integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous">
+        </script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+            integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous">
+        </script>
+        <script src="//malihu.github.io/custom-scrollbar/jquery.mCustomScrollbar.concat.min.js"></script>
+
+        {% load static %}
+        <script src="{% static '/js/main.js' %}"></script>
+
+    {% endblock content %}
+        {% block extra_js%}
+
+        {% if file_name != None and file_name != ''%}
+            <script type="text/javascript">
+                function enterExport(e) {
+                    if (e.keyCode == 13) {
+                        $("#btnExportar").click();
+                        return false;
+                    }
+                }
+                function enterDoccano(e) {
+                    if (e.keyCode == 13) {
+                        $("#btnEditarDoccano").click();
+                        return false;
+                    }
+                }
+                function exportarPDF() {
+                    HideAlert();
+                    pages = $("#exportar_pag").val();
+                    rg = new RegExp(/^([0-9]|[-]?[0-9]\,?)+$/g);
+                    isValid = rg.test(pages);
+
+                    if (pages != undefined && isValid) {
+
+                        pages.split(",").forEach(function (element) {
+                            if (element.indexOf("-") != -1) {
+                                checkSequence = element.split("-")
+                                if (parseInt(checkSequence[0]) > parseInt(checkSequence[1])) {
+                                    isValid = false;
+                                }
+                            }
+                            return;
+                        });
+                        
+                        if (isValid) {
+                            file_path = $("#hdnFileName").val()
+                            hdnPub_id = $("#hdnPub_id").val()
+                            chk_remove_mark = $("#chk_remove_mark").is(":checked");
+                            //window.location.href ='../LoadPdfAnnotation/?' + 'id=' + hdnPub_id + '&file_path=' + file_path + '&pages=' + pages
+                            window.open('../exportPDF/?' + 'id=' + hdnPub_id + '&file_path=' + file_path + '&pages=' + pages + '&remove_mark=' + chk_remove_mark.toString(), "_blank");
+                        }
+                    }
+                    if (!isValid) {
+                        Danger("Para exportar informe as páginas seguindo da menor para a maior, separando com vírgula ou usando hífen para múltiplas páginas. A exportação seguirá a ordem, ignorando páginas não existentes no pdf. <br/><strong>Exemplo: 1,2,3-5,9-34,235-240,255,345</strong>");
+                    }
+                }
+                function redirectDoccano() {
+                    HideAlert();
+                    pub = $("#hdnPub_id").val();
+                    if (pub == undefined || pub == "") {
+                        Danger("Erro ao identificar a publicação, entre em contato com o setor de desenvolvimento.");
+                    }
+                    else {
+                        var valor = document.getElementById("editarLabel").value;
+
+                        if (valor == "" || parseInt(valor) <= 0) {
+                            Danger("Selecione uma página válida.");
+                        }
+                        else {
+                            page = (parseInt(valor)-1).toString();
+                            //isValid = #todo page exists in pdf...
+                            //if(isValid) {
+                                
+                            // # AMBIENTE # homolog
+                            window.open("" + pub + "&page=" + valor, "_blank");
+                            
+                            // # AMBIENTE # localhost
+                            //window.open("http://localhost:5000/projects/1/?publication=" + pub + "&page=" + valor, "_blank");
+                            
+                            //window.open("../redirectDoccano/?publication=" + pub + "&page=" + valor, "_blank");
+
+                            // }
+                            // else {
+                            //     Warning("A página selecionada não contém anotações, não foi possível editar.");
+                            // }
+                        }
+
+                    }
+                }
+            </script>
+        {% endif %}
+
+        <script type="text/javascript">    
+            function Danger(text) {
+                $("#verifica-alert").removeClass("alert-success");
+                $("#verifica-alert").removeClass("alert-danger");
+                $("#verifica-alert").removeClass("alert-warning");
+                $("#verifica-alert").addClass("alert-danger");
+                $("#alertText").html(text);
+                $("#verifica-alert").show();
+            }
+
+            function Warning(text) {
+                $("#verifica-alert").removeClass("alert-success");
+                $("#verifica-alert").removeClass("alert-danger");
+                $("#verifica-alert").removeClass("alert-warning");
+                $("#verifica-alert").addClass("alert-warning");
+                $("#alertText").html(text);
+                $("#verifica-alert").show();
+            }
+
+            function Success(text) {
+                $("#verifica-alert").removeClass("alert-success");
+                $("#verifica-alert").removeClass("alert-danger");
+                $("#verifica-alert").removeClass("alert-warning");
+                $("#verifica-alert").addClass("alert-success");
+                $("#alertText").html(text);
+                $("#verifica-alert").show();
+            }
+
+            function HideAlert() {
+                $("#verifica-alert").hide();
+            }
+            
+            //Get the button:
+            btnGoTop = document.getElementById("btnGoTop");
+
+            // When the user scrolls down 20px from the top of the document, show the button
+            window.onscroll = function() {scrollFunction()};
+
+            function scrollFunction() {
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                btnGoTop.style.display = "block";
+            } else {
+                btnGoTop.style.display = "none";
+            }
+            }
+
+            // When the user clicks on the button, scroll to the top of the document
+            function GoTop() {
+                document.body.scrollTop = 0; // For Safari
+                document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+            }
+    
+            $(document).ready(function(){
+                $(window).load(function() {
+
+                    hdn_exported_file_error = $("#hdn_exported_file_error").val();
+                    if (hdn_exported_file_error != undefined && hdn_exported_file_error != "") {
+                        Danger(hdn_exported_file_error);
+                    }
+                    else {
+                        hdn_exported_file_path = $("#hdn_exported_file_path").val();
+                        if (hdn_exported_file_path != undefined && hdn_exported_file_path != "") {
+                            Success("Arquivo exportado com sucesso! Confira e faça o download no botão de impressão!");
+                        }
+                    }
+
+                    //var verifica = {{count}};
+
+                    // if (verifica){
+                    //  $('#apresentacao').modal('show');
+                    // }
+
+                });
+
+                $("#closeAlert").click(function() {
+                    HideAlert();
+                });
+                
+
+                $("#load-list-page").click(function(){                    
+                        // var loc = window.location;
+                        // var baseUrl = loc.protocol + "//" + loc.hostname + (loc.port? ":"+loc.port : "");
+                        // document.location.href = baseUrl;
+
+                        if (document.getElementById("iframe") !== null) {
+                            $("#iframe").hide();
+                            $("#FormEditLabel").hide();
+                            $("#marked_pages_filter").hide();
+                            HideAlert();
+                        }
+                        // $("#content-list-page").load("../lista/");
+                        document.location.href = "../lista/";
+                });
+                
+                $("#load-list-page-download").click(function(){                    
+                        // var loc = window.location;
+                        // var baseUrl = loc.protocol + "//" + loc.hostname + (loc.port? ":"+loc.port : "");
+                        // document.location.href = baseUrl;
+
+                        if (document.getElementById("iframe") !== null) {
+                            $("#iframe").hide();
+                            $("#FormEditLabel").hide();
+                            $("#marked_pages_filter").hide();
+                            HideAlert();
+                        }
+                        // $("#content-list-page").load("../lista/");
+                        document.location.href = "../lista-download/";
+                });
+
+                $("#chk_marked_pages").click(function() {
+                    iframe = document.getElementById("iframe");
+                    if (iframe !== null) {
+                        //iframe_location = iframe.contentWindow.location
+                        iframe_location = iframe.src;
+                        
+
+                        if (this.checked) {
+                            //iframe.contentWindow.location = iframe_location.toString().replace(".pdf", "_filtrado.pdf");
+                            iframe.src = iframe_location.replace(".pdf", "_filtrado.pdf");
+                        }
+                        else {
+                            //iframe.contentWindow.location = iframe_location.toString().replace("_filtrado.pdf", ".pdf");
+                            iframe.src = iframe_location.replace("_filtrado.pdf", ".pdf");
+                        }
+                    }
+                });
+            });
+        </script>
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,99 @@
+{% block content %}
+
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TESEU</title>
+
+    <!-- using online links -->
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+        integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
+        integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+    <link rel="stylesheet" href="//malihu.github.io/custom-scrollbar/jquery.mCustomScrollbar.min.css">
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static '/css/main.css' %}"> 
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static '/css/sidebar-themes.css' %}">
+
+    {% block extra %}
+
+    <style>
+      
+      .publications{
+
+        text-align: center;
+        margin-left: 330px;
+        width: 70%;
+
+
+      }
+
+      .cabecalho{
+
+        text-align: center;
+        margin-left: 280px;
+
+      }
+
+
+    </style>
+
+    {% endblock %}
+    
+</head>
+
+
+
+<div class="cabecalho">
+    <h1>Lista de Publicações</h1>
+</div>
+</br>
+<div class="table-responsive-xl publications">
+    <table class="table">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Jornal</th>
+            <th scope="col">Data da Publicação</th>
+            <th scope="col">Visualizar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <form action="../LoadPdfAnnotation/" method="POST"></form>
+            {% for pub in publication_list %}
+              <tr>
+                <td>{{pub.publication_text}}</td>
+                <td>{{pub.publication_date}}</td>
+                <td>
+                  <form method="POST" action="../LoadPdfAnnotation/?id={{pub.publication_id}}">
+                    {% csrf_token %}
+                    <input id="data1" type="text" name="data1" value="{{pub.publication_name}}" style="display: none;"/>
+                    <button type="submit" class="btn btn-dark">Download</button>
+                  </form>
+                </td>
+              </td>
+              </tr>
+            {% endfor %}
+          </form>
+        </tbody>
+  
+    </table>
+</div>  
+{% endblock %}
+
+
+{% block extra_js%}
+
+
+{% endblock %}
+
+
+
+
+
+<!-- <a class="btn btn-dark" href="../LoadPdfAnnotation/" id='{{pub.publication_name}}' onclick="(this.id)">Visualizar</a> -->
